@@ -25,7 +25,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "audiotest"
+name = "audiokeyboard"
 version = "0.1.0"
 dependencies = [
  "fltk",
