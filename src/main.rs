@@ -49,7 +49,7 @@ fn main() {
     // sink.pause();
 
     let source = ArbitrarySound::new(
-        sine_function,
+        electric_piano1,
         [
             261.6256, // C
             293.6648, // D
@@ -87,7 +87,7 @@ fn main() {
                 },
                 _ => {
                     let input = app::event_key().to_char().unwrap();
-                    if input == 'd' {
+                    if input == 'd' { // C
                         // let tmp =  tx.send(
                         //     NumberedBool::new(0, true)
                         // );
@@ -101,31 +101,31 @@ fn main() {
                             NumberedBool::new(0, true)
                         ).unwrap();
                         return true;
-                    }else if input == 'f' {
+                    }else if input == 'f' { // D4
                         tx.send(
                             NumberedBool::new(1, true)
                         ).unwrap();
-                    }else if input == 'g' {
+                    }else if input == 'g' { // E4
                         tx.send(
                             NumberedBool::new(2, true)
                         ).unwrap();
-                    }else if input == 'h' {
+                    }else if input == 'h' { // F4
                         tx.send(
                             NumberedBool::new(3, true)
                         ).unwrap();
-                    }else if input == 'j' {
+                    }else if input == 'j' { // G4
                         tx.send(
                             NumberedBool::new(4, true)
                         ).unwrap();
-                    }else if input == 'k' {
+                    }else if input == 'k' { // A4
                         tx.send(
                             NumberedBool::new(5, true)
                         ).unwrap();
-                    }else if input == 'l' {
+                    }else if input == 'l' { // B4
                         tx.send(
                             NumberedBool::new(6, true)
                         ).unwrap();
-                    }else if input == ';' {
+                    }else if input == ';' { // C5
                         tx.send(
                             NumberedBool::new(7, true)
                         ).unwrap();
@@ -138,7 +138,7 @@ fn main() {
             match app::event_key() {
                 _ => {
                     let input = app::event_key().to_char().unwrap();
-                    if input == 'd' {
+                    if input == 'd' { // C4
                         // let tmp = tx.send(
                         //     NumberedBool::default()
                         // );
@@ -151,31 +151,31 @@ fn main() {
                         tx.send(
                             NumberedBool::new(0, false)
                         ).unwrap();
-                    }else if input == 'f' {
+                    }else if input == 'f' { // D4
                         tx.send(
                             NumberedBool::new(1, false)
                         ).unwrap();
-                    }else if input == 'g' {
+                    }else if input == 'g' { // E4
                         tx.send(
                             NumberedBool::new(2, false)
                         ).unwrap();
-                    }else if input == 'h' {
+                    }else if input == 'h' { // F4
                         tx.send(
                             NumberedBool::new(3, false)
                         ).unwrap();
-                    }else if input == 'j' {
+                    }else if input == 'j' { // G4
                         tx.send(
                             NumberedBool::new(4, false)
                         ).unwrap();
-                    }else if input == 'k' {
+                    }else if input == 'k' { // A4
                         tx.send(
                             NumberedBool::new(5, false)
                         ).unwrap();
-                    }else if input == 'l' {
+                    }else if input == 'l' { // B4
                         tx.send(
                             NumberedBool::new(6, false)
                         ).unwrap();
-                    }else if input == ';' {
+                    }else if input == ';' { // C5
                         tx.send(
                             NumberedBool::new(7, false)
                         ).unwrap();
