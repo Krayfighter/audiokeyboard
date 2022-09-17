@@ -50,7 +50,16 @@ fn main() {
 
     let source = ArbitrarySound::new(
         sine_function,
-        [261.6256, 293.6648, 329.6276, 349.2282, 391.9954, 440.0000, 493.8833, 523.2511],
+        [
+            261.6256, // C
+            293.6648, // D
+            329.6276, // E
+            349.2282, // F
+            391.9954, // G
+            440.0000, // A
+            493.8833, // B
+            523.2511 // C
+        ],
         rx
     );
 
@@ -104,19 +113,19 @@ fn main() {
                         tx.send(
                             NumberedBool::new(3, true)
                         ).unwrap();
-                    }else if input == 'i' {
+                    }else if input == 'j' {
                         tx.send(
                             NumberedBool::new(4, true)
                         ).unwrap();
-                    }else if input == 'j' {
+                    }else if input == 'k' {
                         tx.send(
                             NumberedBool::new(5, true)
                         ).unwrap();
-                    }else if input == 'k' {
+                    }else if input == 'l' {
                         tx.send(
                             NumberedBool::new(6, true)
                         ).unwrap();
-                    }else if input == 'l' {
+                    }else if input == ';' {
                         tx.send(
                             NumberedBool::new(7, true)
                         ).unwrap();
@@ -154,19 +163,19 @@ fn main() {
                         tx.send(
                             NumberedBool::new(3, false)
                         ).unwrap();
-                    }else if input == 'i' {
+                    }else if input == 'j' {
                         tx.send(
                             NumberedBool::new(4, false)
                         ).unwrap();
-                    }else if input == 'j' {
+                    }else if input == 'k' {
                         tx.send(
                             NumberedBool::new(5, false)
                         ).unwrap();
-                    }else if input == 'k' {
+                    }else if input == 'l' {
                         tx.send(
                             NumberedBool::new(6, false)
                         ).unwrap();
-                    }else if input == 'l' {
+                    }else if input == ';' {
                         tx.send(
                             NumberedBool::new(7, false)
                         ).unwrap();
