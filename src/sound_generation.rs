@@ -107,7 +107,7 @@ pub mod sound_generation {
                 }
             }
             // println!("running inside audio loop");
-
+            
             self.sample_num = self.sample_num.wrapping_add(1);
 
             let para_xvalue: f32 = RADIAN * self.sample_num as f32 / 48000.0;
@@ -126,6 +126,7 @@ pub mod sound_generation {
 
             if ydiv < 1 {
                 // println!("nothing to do");
+                self.sample_num -= 1;
                 return Some(0.0);
             }else {
                 return Some(yval/ydiv as f32);
