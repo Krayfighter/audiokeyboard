@@ -1,1 +1,5 @@
 /target
+
+
+# private release build script
+release.sh

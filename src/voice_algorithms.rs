@@ -2,7 +2,7 @@
 
 pub mod voice_algorithms {
 
-    const PI: f32 = std::f32::consts::PI;
+    use std::f32::consts::PI;
 
     #[inline]
     pub fn _sine_function(xval: f32) -> f32 {
