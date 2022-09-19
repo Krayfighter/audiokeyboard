@@ -1,91 +1,106 @@
 
 
 pub mod sound_generation {
+
+    const topscale1: [f32; 21] = [
+        207.6523, // Ab3
+        220.0000, // A3
+        233.0819, // Bb3
+        246.9417, // B3
+        261.6256, // C4
+        277.1826, // Db4
+        293.6648, // D4
+        311.1270, // Eb4
+        329.6276, // E4
+        349.2282, // F4
+        369.9944, // Gb4
+        391.9954, // G4
+        415.3047, // Ab4
+        440.0000, // A4
+        466.1638, // Bb4
+        493.8833, // B4
+        523.2511, // C5
+        554.3653, // Db5
+        587.3295, // D5
+        622.2540, // Eb5
+        659.2551, // E5
+    ];
+
+
+    const bottomscale1: [f32; 18] = [
+        698.4565, // F5
+        739.9888, // Gb5
+        783.9909, // G5
+        830.6094, // Ab5
+        880.0000, // A5
+        932.3275, // Bb5
+        987.7666, // B5
+        1046.502, // C6
+        1108.731, // Db6
+        1174.659, // D6
+        1244.508, // Eb6
+        1318.510, // E6
+        1396.913, // F6
+        1479.978, // Gb6
+        1567.982, // G6
+        1661.219, // Ab6
+        1760.000, // A6
+        1864.655, // Bb6
+    ];
+
     use std::{
         sync::mpsc::Receiver
-        // sync::atomic::{
-        //     AtomicBool,
-        //     Ordering::Relaxed
-        // }
     };
 
     const PI: f32 = std::f32::consts::PI;
     const RADIAN: f32 = 2.0 * PI;
 
-    // impl Copy for AtomicBool {
 
-    // }
-
-    pub struct NumberedBool {
+    pub struct NoteIndicator {
         number: usize,
+        upper: bool,
         value: bool
     }
 
-    impl NumberedBool {
-        pub fn new(number: usize, value: bool) -> Self {
+    impl NoteIndicator {
+        pub fn new(number: usize, upper: bool, value: bool) -> Self {
             return Self {
                 number: number,
+                upper: upper,
                 value: value
             }
         }
-        // pub fn default() -> Self {
-        //     return Self {
-        //         number: 0,
-        //         value: false
-        //     }
-        // }
     }
 
-    impl Default for NumberedBool {
+    impl Default for NoteIndicator {
         fn default() -> Self {
-        Self { number: Default::default(), value: Default::default() }
-    }
+            Self { number: Default::default(), upper: Default::default(), value: Default::default() }
+        }
+        // fn default() -> Self {
+    // }
     }
 
     #[derive (Debug)]
     pub struct ArbitrarySound {
         generator_function: fn(f32) -> f32,
         sample_num: usize,
-        frequencies: [f32; 8],
-        active_signals: [bool; 8],
-        rx: Receiver<NumberedBool>
-        // active_signals: [AtomicBool; 8]
+        upper_signals: [bool; 21],
+        lower_signals: [bool; 18],
+        rx: Receiver<NoteIndicator>
     }
 
     impl ArbitrarySound {
         // #[inline]
-        pub fn new(genfunc: fn(f32) -> f32, freqs: [f32; 8], rx: Receiver<NumberedBool>) -> ArbitrarySound{
+        pub fn new(genfunc: fn(f32) -> f32, rx: Receiver<NoteIndicator>) -> ArbitrarySound {
             return ArbitrarySound {
                 generator_function: genfunc,
                 sample_num: 0,
-                frequencies: freqs,
-                active_signals: [false, false, false, false, false, false, false, false],
+                upper_signals: [false; 21],
+                lower_signals: [false; 18],
                 rx: rx
-                // active_signals: [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)]
-                // active_signals: [false]
             };
         }
 
-        // pub fn read_signals(&self) -> [bool; 8] {
-        //     return [
-        //         self.active_signals[0].load(Relaxed),
-        //         self.active_signals[1].load(Relaxed),
-        //         self.active_signals[2].load(Relaxed),
-        //         self.active_signals[3].load(Relaxed),
-        //         self.active_signals[4].load(Relaxed),
-        //         self.active_signals[5].load(Relaxed),
-        //         self.active_signals[6].load(Relaxed),
-        //         self.active_signals[7].load(Relaxed)
-        //     ]
-        // }
-
-        // pub fn activate_signal(&mut self, func_number: usize) {
-        //     self.active_signals[func_number].store(true, Relaxed);
-        // }
-
-        // pub fn deactivate_signal(&mut self, func_number: usize) {
-        //     self.active_signals[func_number].store(false, Relaxed);
-        // }
     }
 
     impl Iterator for ArbitrarySound {
@@ -94,12 +109,17 @@ pub mod sound_generation {
         #[inline]
         fn next(&mut self) -> Option<f32> {
             {
-                let mut _tmp = Ok(NumberedBool::default());
+                let mut _tmp = Ok(NoteIndicator::default());
                 loop {
                     _tmp = self.rx.try_recv();
                     match _tmp {
                         Ok(_tmp) => {
-                            self.active_signals[_tmp.number] = _tmp.value;
+                            // self.active_signals[_tmp.number] = _tmp.value;
+                            if _tmp.upper {
+                                self.upper_signals[_tmp.number] = _tmp.value;
+                            }else {
+                                self.lower_signals[_tmp.number] = _tmp.value;
+                            }
                             // contine;
                         }
                         Err(_tmp) => {break;}
@@ -115,13 +135,21 @@ pub mod sound_generation {
             let mut yval: f32 = 0.0;
             let mut ydiv: usize = 0;
 
-            let mut fucktard: usize = 0;
-            for val in self.active_signals {
+            let mut iter: usize = 0;
+            for val in self.upper_signals {
                 if val {
-                    yval += (self.generator_function)(self.frequencies[fucktard]*para_xvalue);
+                    yval += (self.generator_function)(topscale1[iter]*para_xvalue);
                     ydiv += 1;
                 }
-                fucktard += 1;
+                iter += 1;
+            }
+            iter = 0;
+            for val in self.lower_signals {
+                if val {
+                    yval += (self.generator_function)(bottomscale1[iter]*para_xvalue);
+                    ydiv += 1;
+                }
+                iter += 1;
             }
 
             if ydiv < 1 {
