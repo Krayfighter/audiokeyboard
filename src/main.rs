@@ -49,7 +49,7 @@ fn main() {
     sink.set_volume(0.15); // reduce volume
 
     let source = ArbitrarySound::new(
-        quadruple_sine,
+        _quadruple_sine,
         rx
     ); // this is the source for all generated audio
 
