@@ -68,4 +68,10 @@ pub mod voice_algorithms {
     pub fn quadruple_sine(xval: f32) -> f32 {
         return (xval.sin()+(xval*2.0).sin()+(xval*3.0).sin()+(xval*4.0).sin())/3.3
     }
+
+    // #[inline]
+    // pub fn test(xval: f32) -> f32 {
+    //     return xval.log10().sin()
+    // }
+
 }
