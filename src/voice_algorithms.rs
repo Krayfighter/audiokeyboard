@@ -5,26 +5,26 @@ pub mod voice_algorithms {
     const PI: f32 = std::f32::consts::PI;
 
     #[inline]
-    pub fn sine_function(xval: f32) -> f32 {
+    pub fn _sine_function(xval: f32) -> f32 {
         return xval.sin();
     }
 
     #[inline]
-    pub fn electric_piano1(xval: f32) -> f32 {
+    pub fn _electric_piano1(xval: f32) -> f32 {
         return
             ((5.0*(xval/2.0/PI)).sin()+
             (5.0*(xval/PI)).cos())/2.0
     }
 
     #[inline]
-    pub fn electric_piano2(xval: f32) -> f32 {
+    pub fn _electric_piano2(xval: f32) -> f32 {
         return
             (xval.sin()+
             (2.0*xval).sin())/3.0
     }
 
     #[inline]
-    pub fn vibrawave1(xval: f32) -> f32 {
+    pub fn _vibrawave1(xval: f32) -> f32 {
         // vibra wave
         return
             (xval.sin()+
@@ -36,7 +36,7 @@ pub mod voice_algorithms {
     }
 
     #[inline]
-    pub fn vibrawave2(xval: f32) -> f32 {
+    pub fn _vibrawave2(xval: f32) -> f32 {
         // vibra wave 2
         return
             (xval.sin()+
@@ -46,7 +46,7 @@ pub mod voice_algorithms {
     }
 
     #[inline]
-    pub fn square_funtion(xval: f32) -> f32 {
+    pub fn _square_funtion(xval: f32) -> f32 {
         if xval.sin() > 0.0 {
             return 1.0
         }else {
@@ -55,17 +55,17 @@ pub mod voice_algorithms {
     }
 
     #[inline]
-    pub fn double_sine(xval: f32) -> f32 {
+    pub fn _double_sine(xval: f32) -> f32 {
         return (xval.sin()+(xval*2.0).sin())/1.8
     }
 
     #[inline]
-    pub fn triple_sine(xval: f32) -> f32 {
+    pub fn _triple_sine(xval: f32) -> f32 {
         return (xval.sin()+(xval*2.0).sin()+(xval*3.0).sin())/2.5
     }
 
     #[inline]
-    pub fn quadruple_sine(xval: f32) -> f32 {
+    pub fn _quadruple_sine(xval: f32) -> f32 {
         return (xval.sin()+(xval*2.0).sin()+(xval*3.0).sin()+(xval*4.0).sin())/3.3
     }
 
