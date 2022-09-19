@@ -2,7 +2,7 @@
 
 pub mod sound_generation {
 
-    const topscale1: [f32; 21] = [
+    const TOPSCALE1: [f32; 21] = [
         207.6523, // Ab3
         220.0000, // A3
         233.0819, // Bb3
@@ -27,7 +27,7 @@ pub mod sound_generation {
     ];
 
 
-    const bottomscale1: [f32; 18] = [
+    const BOTTOMSCALE2: [f32; 18] = [
         698.4565, // F5
         739.9888, // Gb5
         783.9909, // G5
@@ -138,7 +138,7 @@ pub mod sound_generation {
             let mut iter: usize = 0;
             for val in self.upper_signals {
                 if val {
-                    yval += (self.generator_function)(topscale1[iter]*para_xvalue);
+                    yval += (self.generator_function)(TOPSCALE1[iter]*para_xvalue);
                     ydiv += 1;
                 }
                 iter += 1;
@@ -146,7 +146,7 @@ pub mod sound_generation {
             iter = 0;
             for val in self.lower_signals {
                 if val {
-                    yval += (self.generator_function)(bottomscale1[iter]*para_xvalue);
+                    yval += (self.generator_function)(BOTTOMSCALE2[iter]*para_xvalue);
                     ydiv += 1;
                 }
                 iter += 1;
