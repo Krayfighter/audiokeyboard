@@ -1,9 +1,11 @@
 // use crate::ArbitrarySound;
 mod sound_generation;
 mod voice_algorithms;
+mod video_functions;
 
 use sound_generation::sound_generation::*;
 use voice_algorithms::voice_algorithms::*;
+use video_functions::video_functions::*;
 
 // use std::{
 //     io::stdin,
@@ -26,49 +28,33 @@ use fltk::{
     // button::Button
 };
 
+
 fn main() {
 
     /* channel definition */
-    let (tx, rx) = mpsc::channel::<NumberedBool>();
+    // define the sender and receiver to send to the audio thread
+    let (tx, rx) = mpsc::channel::<NoteIndicator>();
+
 
     /* audio initialization */
+    // define the audio stream and its handle
     let (
         _stream,
         stream_handle
     ) = OutputStream::try_default().unwrap();
 
-    // let (_stream2, stream_handle2) = OutputStream::try_default().unwrap();
+    // get a sink for the output stream
     let sink = Sink::try_new(&stream_handle).unwrap();
-    // let sink = Sink::try_new(&stream_handle2).unwrap();
 
-    sink.set_volume(0.1);
-    // sink.set_volume(0.1);
-
-
-    // sink.append(ArbitrarySound::new(261.6256, sine_function));
-    // sink.pause();
+    sink.set_volume(0.15); // reduce volume
 
     let source = ArbitrarySound::new(
-        electric_piano1,
-        [
-            261.6256, // C
-            293.6648, // D
-            329.6276, // E
-            349.2282, // F
-            391.9954, // G
-            440.0000, // A
-            493.8833, // B
-            523.2511 // C
-        ],
+        quadruple_sine,
         rx
-    );
+    ); // this is the source for all generated audio
 
-    // rx.recv();
+    sink.append(source); // put the source into the sink
 
-    sink.append(source);
-
-    // rx;
-    // sink.pause();
 
     /* video initialization */
     let app = app::App::default().with_scheme(app::Scheme::Gleam);
@@ -87,49 +73,7 @@ fn main() {
                 },
                 _ => {
                     let input = app::event_key().to_char().unwrap();
-                    if input == 'd' { // C
-                        // let tmp =  tx.send(
-                        //     NumberedBool::new(0, true)
-                        // );
-                        // match tmp {
-                        //     Ok(tmp) => {},
-                        //     Err(tmp) => {
-                        //         print!("{}", tmp)
-                        //     }
-                        // }
-                        tx.send(
-                            NumberedBool::new(0, true)
-                        ).unwrap();
-                        return true;
-                    }else if input == 'f' { // D4
-                        tx.send(
-                            NumberedBool::new(1, true)
-                        ).unwrap();
-                    }else if input == 'g' { // E4
-                        tx.send(
-                            NumberedBool::new(2, true)
-                        ).unwrap();
-                    }else if input == 'h' { // F4
-                        tx.send(
-                            NumberedBool::new(3, true)
-                        ).unwrap();
-                    }else if input == 'j' { // G4
-                        tx.send(
-                            NumberedBool::new(4, true)
-                        ).unwrap();
-                    }else if input == 'k' { // A4
-                        tx.send(
-                            NumberedBool::new(5, true)
-                        ).unwrap();
-                    }else if input == 'l' { // B4
-                        tx.send(
-                            NumberedBool::new(6, true)
-                        ).unwrap();
-                    }else if input == ';' { // C5
-                        tx.send(
-                            NumberedBool::new(7, true)
-                        ).unwrap();
-                    }else {}
+                    parse_keyboard_character(input, true, tx.clone());
                     return true
                 }
             }
@@ -138,48 +82,7 @@ fn main() {
             match app::event_key() {
                 _ => {
                     let input = app::event_key().to_char().unwrap();
-                    if input == 'd' { // C4
-                        // let tmp = tx.send(
-                        //     NumberedBool::default()
-                        // );
-                        // match tmp {
-                        //     Ok(tmp) => {},
-                        //     Err(tmp) => {
-                        //         print!("{:?}", tmp)
-                        //     }
-                        // }
-                        tx.send(
-                            NumberedBool::new(0, false)
-                        ).unwrap();
-                    }else if input == 'f' { // D4
-                        tx.send(
-                            NumberedBool::new(1, false)
-                        ).unwrap();
-                    }else if input == 'g' { // E4
-                        tx.send(
-                            NumberedBool::new(2, false)
-                        ).unwrap();
-                    }else if input == 'h' { // F4
-                        tx.send(
-                            NumberedBool::new(3, false)
-                        ).unwrap();
-                    }else if input == 'j' { // G4
-                        tx.send(
-                            NumberedBool::new(4, false)
-                        ).unwrap();
-                    }else if input == 'k' { // A4
-                        tx.send(
-                            NumberedBool::new(5, false)
-                        ).unwrap();
-                    }else if input == 'l' { // B4
-                        tx.send(
-                            NumberedBool::new(6, false)
-                        ).unwrap();
-                    }else if input == ';' { // C5
-                        tx.send(
-                            NumberedBool::new(7, false)
-                        ).unwrap();
-                    }else {}
+                    parse_keyboard_character(input, false, tx.clone());
                     return true
                 }
             }
