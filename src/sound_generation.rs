@@ -2,7 +2,7 @@
 
 pub mod sound_generation {
 
-    const TOPSCALE1: [f32; 21] = [
+    pub const TOPSCALE1: [f32; 21] = [
         207.6523, // Ab3
         220.0000, // A3
         233.0819, // Bb3
@@ -24,6 +24,18 @@ pub mod sound_generation {
         587.3295, // D5
         622.2540, // Eb5
         659.2551, // E5
+    ];
+
+    pub const TOPSCALE1BLACK: [f32; 9] = [
+        207.6523, // Ab3
+        233.0819, // Bb3
+        277.1826, // Db4
+        311.1270, // Eb4
+        369.9944, // Gb4
+        415.3047, // Ab4
+        466.1638, // Bb4
+        554.3653, // Db5
+        622.2540, // Eb5
     ];
 
 
@@ -57,9 +69,9 @@ pub mod sound_generation {
 
 
     pub struct NoteIndicator {
-        number: usize,
-        upper: bool,
-        value: bool
+        pub number: usize,
+        pub upper: bool,
+        pub value: bool
     }
 
     impl NoteIndicator {
