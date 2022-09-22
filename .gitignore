@@ -3,3 +3,6 @@
 
 # private release build script
 release.sh
+
+# vscode debug configs
+.vscode
