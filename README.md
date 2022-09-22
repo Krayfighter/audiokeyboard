@@ -10,10 +10,10 @@ allows easy source mod for oyur own sound wave functions
 
 ## Supported Platforms
 
-Linux
-Window
+Linux\
+Windows
 
 ## Tested Platforms
 
-Linux: Fedora 36
+Linux: Fedora 36\
 Windows: wine
