@@ -46,13 +46,19 @@ pub mod voice_algorithms {
     }
 
     #[inline]
-    pub fn _square_funtion(xval: f32) -> f32 {
+    pub fn _square_wave1(xval: f32) -> f32 {
         if xval.sin() > 0.0 {
             return 1.0
         }else {
             return -1.0
         }
     }
+
+    // #[inline]
+    // pub fn _square_wave2(xval: f32) -> f32 {
+    //     // println
+    //     return (xval.sin().powf(0.333)+xval.sin())/10000000.0; // good square sound
+    // }
 
     #[inline]
     pub fn _double_sine(xval: f32) -> f32 {
@@ -67,6 +73,36 @@ pub mod voice_algorithms {
     #[inline]
     pub fn _quadruple_sine(xval: f32) -> f32 {
         return (xval.sin()+(xval*2.0).sin()+(xval*3.0).sin()+(xval*4.0).sin())/3.3
+    }
+
+    // #[inline]
+    // pub fn _test(xval: f32) -> f32 {
+    //     // return ((xval.sin()).powf(0.333)).sin()
+    //     // return (xval.sin()*xval).powf(0.2).sin()
+    //     // return (xval.sin()*xval.powf(2.0)).powf(0.2).sin()
+    //     // return xval.sin().powf(0.333);
+    //     // return (xval.powf(2.0).sin())/2.0+(xval+0.5).cos()
+    //     // return ((xval.powf(2.0).sin()/10.0)+xval.sin())/1.2 // good space sound
+    // }
+
+    #[inline]
+    pub fn _clarinet1(xval: f32) -> f32 {
+        return (
+            xval.sin()+
+            ((2.0*xval).sin()*0.04)+
+            ((3.0*xval).sin()*0.99)+
+            ((4.0*xval).sin()*0.12)+
+            ((5.0*xval).sin()*0.53)+
+            ((6.0*xval).sin()*0.11)+
+            ((7.0*xval).sin()*0.26)+
+            ((8.0*xval).sin()*0.05)+
+            ((9.0*xval).sin()*0.24)+
+            ((10.0*xval).sin()*0.07)+
+            ((11.0*xval).sin()*0.02)+
+            ((12.0*xval).sin()*0.03)+
+            ((13.0*xval).sin()*0.02)+
+            ((14.0*xval).sin()*0.03)
+        )/2.0
     }
 
     // #[inline]
