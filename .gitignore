@@ -6,3 +6,6 @@ release.sh
 
 # vscode debug configs
 .vscode
+
+# remove old files for reference
+.src
