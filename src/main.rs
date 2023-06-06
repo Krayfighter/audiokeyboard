@@ -1,14 +1,10 @@
 
 
-// extern crate sdl2;
 
 mod sound_types;
-// mod audio;
 // pub mod ui;
 mod voice_algorithms;
 
-// use iced::Application;
-// use ui::ActiveKeys;
 
 use core::panic;
 
@@ -30,7 +26,7 @@ fn main() {
 
     // define the sender_receiver pair (gets the sender back)
     let (sound_gen, sender) = sound_types::SoundGenerator::new(
-        voice_algorithms::_electric_piano2,
+        voice_algorithms::_electric_piano1,
     );
 
     sink.append(sound_gen);
@@ -83,6 +79,7 @@ fn main() {
         let pressed_keys = &keys - &previous_keys;
         let released_keys = &previous_keys - &keys;
 
+
         for key in pressed_keys {
             match sender.send((sound_types::key_to_note(key), true)) {
                 Ok(_) => {},
@@ -96,9 +93,6 @@ fn main() {
                 Err(_) => println!("error sending key"),
             }
         }
-        // if !pressed_keys.is_empty() || !released_keys.is_empty() {
-        //     println!("new_keys: {:?}\told_keys:{:?}", pressed_keys, released_keys);
-        // }
 
         previous_keys = keys;
 

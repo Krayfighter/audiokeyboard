@@ -94,13 +94,13 @@ pub struct SoundGenerator {
     audio_callback: fn(f32) -> f32,
     sample_number: usize, // the current x value (in terms of a graph)
     active_keys: Vec<Note>, // TODO might be better as double linked list ?
-    rx: Receiver<(Note, bool)> // carry note and whether or not it's pressed
+    rx: Receiver<(Option<Note>, bool)> // carry note and whether or not it's pressed
 }
 
 impl SoundGenerator {
-    pub fn new(callback: fn(f32) -> f32) -> (Self, mpsc::Sender<(Note, bool)>) {
+    pub fn new(callback: fn(f32) -> f32) -> (Self, mpsc::Sender<(Option<Note>, bool)>) {
         // rx is owned by the SoundGenerator struct, and ownership of tx is handed to the main thread
-        let (tx, rx) = mpsc::channel::<(Note, bool)>();
+        let (tx, rx) = mpsc::channel::<(Option<Note>, bool)>();
         return (
             Self {
                 audio_callback: callback,
@@ -118,7 +118,7 @@ impl Iterator for SoundGenerator{
 
     fn next(&mut self) -> Option<Self::Item> {
         { // receive any updates from main thread
-            let mut state_change: Result<(Note, bool), TryRecvError>;
+            let mut state_change: Result<(Option<Note>, bool), TryRecvError>;
             loop {
                 state_change = self.rx.try_recv();
                 match state_change {
@@ -127,11 +127,19 @@ impl Iterator for SoundGenerator{
                                 // println!("state on");
                                 // println!("{}", state_change.0.freq());
                             // add state_change.0 to the active keys
-                            self.active_keys.push(state_change.0);
+                            match state_change.0 {
+                                Some(change) => self.active_keys.push(change),
+                                None => {},
+                            };
                         }else {
+
+                            match state_change.0 {
+                                Some(change) => self.active_keys.retain(|&x| x != change),
+                                None => {},
+                            };
                                 // println!("state off");
                             // should remove all instances of state_change.0 from active_keys
-                            self.active_keys.retain(|&x| x != state_change.0);
+                            // self.active_keys.retain(|&x| x != state_change.0);
                         }
                     }
                     Err(_) => {break;} // this means the no more items are in the receiver queue
@@ -192,27 +200,69 @@ impl rodio::Source for SoundGenerator {
     }
 }
 
+pub enum OctaveMod {
+    ShiftDown,
+    ShiftUp,
+}
 
 #[inline]
-pub fn key_to_note(key: sdl2::keyboard::Keycode) -> Note {
+pub fn key_to_note(key: sdl2::keyboard::Keycode) -> Option<Note> {
     // use sound_types::{TET, Note};
+    // const base: u8 = 4;
+    // let mut octave_shift = 4; // starting point
+    // let shift: u8 = match modifier {
+    //     Some(_mod) => {
+    //         match _mod {
+    //             OctaveMod::ShiftDown => 3,
+    //             OctaveMod::ShiftUp => 5,
+    //         }
+    //     },
+    //     None => 4,
+    // };
+    // println!("{}", shift);
+    let shift = 4;
+
+    // 
 
     match key {
-        sdl2::keyboard::Keycode::Q => Note::new(TET::C, 4),
-        sdl2::keyboard::Keycode::Num2 => Note::new(TET::Db, 4),
-        sdl2::keyboard::Keycode::W => Note::new(TET::D, 4),
-        sdl2::keyboard::Keycode::Num3 => Note::new(TET::Eb, 4),
-        sdl2::keyboard::Keycode::E => Note::new(TET::E, 4),
-        sdl2::keyboard::Keycode::R => Note::new(TET::F, 4),
-        sdl2::keyboard::Keycode::Num5 => Note::new(TET::Gb, 4),
-        sdl2::keyboard::Keycode::T => Note::new(TET::G, 4),
-        sdl2::keyboard::Keycode::Num6 => Note::new(TET::Ab, 4),
-        sdl2::keyboard::Keycode::Y => Note::new(TET::A, 5),
-        sdl2::keyboard::Keycode::Num7 => Note::new(TET::Bb,5),
-        sdl2::keyboard::Keycode::U => Note::new(TET::B, 5),
+        sdl2::keyboard::Keycode::A => Some(Note::new(TET::Ab, shift-2)),
+        sdl2::keyboard::Keycode::Z => Some(Note::new(TET::A, shift-1)),
+        sdl2::keyboard::Keycode::S => Some(Note::new(TET::Bb,shift-1)),
+        sdl2::keyboard::Keycode::X => Some(Note::new(TET::B, shift-1)),
+        sdl2::keyboard::Keycode::C => Some(Note::new(TET::C, shift-1)),
+        sdl2::keyboard::Keycode::F => Some(Note::new(TET::Db, shift-1)),
+        sdl2::keyboard::Keycode::V => Some(Note::new(TET::D, shift-1)),
+        sdl2::keyboard::Keycode::G => Some(Note::new(TET::Eb, shift-1)),
+        sdl2::keyboard::Keycode::B => Some(Note::new(TET::E, shift-1)),
+        sdl2::keyboard::Keycode::N => Some(Note::new(TET::F, shift-1)),
+        sdl2::keyboard::Keycode::J => Some(Note::new(TET::Gb, shift-1)),
+        sdl2::keyboard::Keycode::M => Some(Note::new(TET::G, shift-1)),
+        sdl2::keyboard::Keycode::K => Some(Note::new(TET::Ab, shift-1)),
+        sdl2::keyboard::Keycode::Comma => Some(Note::new(TET::A, shift)),
+        sdl2::keyboard::Keycode::L => Some(Note::new(TET::Bb,shift)),
+        sdl2::keyboard::Keycode::Period => Some(Note::new(TET::B, shift)),
+
+        // TOD ROW
+        sdl2::keyboard::Keycode::Q => Some(Note::new(TET::C, shift)),
+        sdl2::keyboard::Keycode::Num2 => Some(Note::new(TET::Db, shift)),
+        sdl2::keyboard::Keycode::W => Some(Note::new(TET::D, shift)),
+        sdl2::keyboard::Keycode::Num3 => Some(Note::new(TET::Eb, shift)),
+        sdl2::keyboard::Keycode::E => Some(Note::new(TET::E, shift)),
+        sdl2::keyboard::Keycode::R => Some(Note::new(TET::F, shift)),
+        sdl2::keyboard::Keycode::Num5 => Some(Note::new(TET::Gb, shift)),
+        sdl2::keyboard::Keycode::T => Some(Note::new(TET::G, shift)),
+        sdl2::keyboard::Keycode::Num6 => Some(Note::new(TET::Ab, shift)),
+        sdl2::keyboard::Keycode::Y => Some(Note::new(TET::A, shift+1)),
+        sdl2::keyboard::Keycode::Num7 => Some(Note::new(TET::Bb,shift+1)),
+        sdl2::keyboard::Keycode::U => Some(Note::new(TET::B, shift+1)),
+        sdl2::keyboard::Keycode::I => Some(Note::new(TET::C, shift+1)),
+        sdl2::keyboard::Keycode::Num9 => Some(Note::new(TET::Db, shift+1)),
+        sdl2::keyboard::Keycode::O => Some(Note::new(TET::D, shift+1)),
+        sdl2::keyboard::Keycode::Num0 => Some(Note::new(TET::Eb, shift+1)),
+        sdl2::keyboard::Keycode::P => Some(Note::new(TET::E, shift+1)),
         _ => {
             // TODO fix this
-            Note::new(TET::C, 1)
+            None
         }
     }
 }
