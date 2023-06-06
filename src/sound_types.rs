@@ -8,7 +8,8 @@ use std::sync::mpsc::{
 use std::sync::mpsc;
 
 // the constant for the change in angle at the current audio playback rate
-const ANGLE_CONSTANT: f32 = (std::f32::consts::PI*2.0)/48000.0;
+const SAMPLE_RATE: u32 = 44100;
+const ANGLE_CONSTANT: f32 = (std::f32::consts::PI*2.0)/SAMPLE_RATE as f32;
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -159,7 +160,8 @@ impl Iterator for SoundGenerator{
         sample_value /= key_count as f32;
 
         if key_count > 0 {
-            return Some(sample_value);
+            // println!("value: {}, toned down: {}", sample_value.tanh(), sample_value.tanh()*0.5);
+            return Some(sample_value.tanh() as f32*0.5);
         }else {
             return Some(0.0);
         }
@@ -181,7 +183,7 @@ impl rodio::Source for SoundGenerator {
 
     #[inline]
     fn sample_rate(&self) -> u32 {
-        return 48000
+        return SAMPLE_RATE
     }
 
     #[inline]

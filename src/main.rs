@@ -30,7 +30,7 @@ fn main() {
 
     // define the sender_receiver pair (gets the sender back)
     let (sound_gen, sender) = sound_types::SoundGenerator::new(
-        voice_algorithms::_quadruple_sine,
+        voice_algorithms::_electric_piano2,
     );
 
     sink.append(sound_gen);
