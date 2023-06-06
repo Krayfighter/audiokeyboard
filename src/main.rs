@@ -11,7 +11,6 @@ mod voice_algorithms;
 // use ui::ActiveKeys;
 
 use core::panic;
-use std::sync::mpsc;
 
 
 fn main() {
@@ -85,11 +84,17 @@ fn main() {
         let released_keys = &previous_keys - &keys;
 
         for key in pressed_keys {
-            sender.send((sound_types::key_to_note(key), true));
+            match sender.send((sound_types::key_to_note(key), true)) {
+                Ok(_) => {},
+                Err(_) => println!("error sending key"),
+            }
         }
 
         for key in released_keys {
-            sender.send((sound_types::key_to_note(key), false));
+            match sender.send((sound_types::key_to_note(key), false)) {
+                Ok(_) => {},
+                Err(_) => println!("error sending key"),
+            }
         }
         // if !pressed_keys.is_empty() || !released_keys.is_empty() {
         //     println!("new_keys: {:?}\told_keys:{:?}", pressed_keys, released_keys);
