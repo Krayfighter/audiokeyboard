@@ -57,7 +57,7 @@ pub fn _square_wave1(xval: f32) -> f32 {
 // #[inline]
 // pub fn _square_wave2(xval: f32) -> f32 {
 //     // println
-//     return (xval.sin().powf(0.333)+xval.sin())/10000000.0; // good square sound
+//     return (xval.sin().powf(0.2)+xval.sin())/1000000000.0; // good square sound but flawed
 // }
 
 #[inline]

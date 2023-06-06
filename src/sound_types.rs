@@ -88,13 +88,6 @@ impl Note {
     }
 }
 
-// struct Keyboard {
-//     inner: HashMap<Note, f32>,
-// }
-
-// // impl HashMapExt for Keyboard {
-
-// // }
 
 pub struct SoundGenerator {
     audio_callback: fn(f32) -> f32,
@@ -130,11 +123,12 @@ impl Iterator for SoundGenerator{
                 match state_change {
                     Ok(state_change) => {
                         if state_change.1 {
-                            println!("state on");
+                                // println!("state on");
+                                // println!("{}", state_change.0.freq());
                             // add state_change.0 to the active keys
                             self.active_keys.push(state_change.0);
                         }else {
-                            println!("state off");
+                                // println!("state off");
                             // should remove all instances of state_change.0 from active_keys
                             self.active_keys.retain(|&x| x != state_change.0);
                         }
@@ -193,6 +187,31 @@ impl rodio::Source for SoundGenerator {
     #[inline]
     fn total_duration(&self) -> Option<std::time::Duration> {
         return None
+    }
+}
+
+
+#[inline]
+pub fn key_to_note(key: sdl2::keyboard::Keycode) -> Note {
+    // use sound_types::{TET, Note};
+
+    match key {
+        sdl2::keyboard::Keycode::Q => Note::new(TET::C, 4),
+        sdl2::keyboard::Keycode::Num2 => Note::new(TET::Db, 4),
+        sdl2::keyboard::Keycode::W => Note::new(TET::D, 4),
+        sdl2::keyboard::Keycode::Num3 => Note::new(TET::Eb, 4),
+        sdl2::keyboard::Keycode::E => Note::new(TET::E, 4),
+        sdl2::keyboard::Keycode::R => Note::new(TET::F, 4),
+        sdl2::keyboard::Keycode::Num5 => Note::new(TET::Gb, 4),
+        sdl2::keyboard::Keycode::T => Note::new(TET::G, 4),
+        sdl2::keyboard::Keycode::Num6 => Note::new(TET::Ab, 4),
+        sdl2::keyboard::Keycode::Y => Note::new(TET::A, 5),
+        sdl2::keyboard::Keycode::Num7 => Note::new(TET::Bb,5),
+        sdl2::keyboard::Keycode::U => Note::new(TET::B, 5),
+        _ => {
+            // TODO fix this
+            Note::new(TET::C, 1)
+        }
     }
 }
 
