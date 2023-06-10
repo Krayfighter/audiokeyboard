@@ -76,7 +76,9 @@ impl Note {
             ((2 as f32).powf(1.0/12.0)). // get 12th root of two
             powf( // to the power of the key number (n) - 49 (a)
                 ((self.octave) as f32 * 12.0+ // the number of keys per octave
-                (self.tone as i32) as f32)- // add the current key
+                // for some reason the normal tone produced is an augmented fifth
+                // above where it should be so we subtract 8 half-steps to even it out
+                (self.tone as i32) as f32-8.0)- // add the current key
                 49.0 // the value of the reference key
             )
         )
@@ -125,10 +127,12 @@ impl Iterator for SoundGenerator{
                     Ok(state_change) => {
                         if state_change.1 {
                                 // println!("state on");
-                                // println!("{}", state_change.0.freq());
                             // add state_change.0 to the active keys
                             match state_change.0 {
-                                Some(change) => self.active_keys.push(change),
+                                Some(change) => {
+                                    // println!("{}", change.freq());
+                                    self.active_keys.push(change);
+                                },
                                 None => {},
                             };
                         }else {

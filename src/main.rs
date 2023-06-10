@@ -11,6 +11,10 @@ use core::panic;
 
 fn main() {
 
+        // NOTE: I am using rodio for audio instead of sdl2::audio
+        // I may want to change this in the future to reduce the dependency
+        // count, but sdl2::audio works a little different so it would be
+        // a significant investment
 
     /* audio initialization */
     // define the audio stream and its handle
@@ -26,7 +30,7 @@ fn main() {
 
     // define the sender_receiver pair (gets the sender back)
     let (sound_gen, sender) = sound_types::SoundGenerator::new(
-        voice_algorithms::_electric_piano1,
+        voice_algorithms::_sine_function,
     );
 
     sink.append(sound_gen);
@@ -49,6 +53,18 @@ fn main() {
         .map_err(|error| {error.to_string()}).unwrap()
     ;
 
+    let mut canvas = match window.into_canvas()
+        .build()
+        .map_err(|e| e.to_string()
+    ) {
+        Ok(canvas) => canvas,
+        Err(errcode) => panic!("canvas creation error: {}", errcode),
+    };
+
+    canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0, 0));
+    canvas.clear();
+    canvas.present();
+
     let mut events = match sdl_context.event_pump() {
         Ok(epump) => epump,
         Err(errcode) => panic!("event creation failed: {}", errcode),
@@ -57,11 +73,11 @@ fn main() {
     let mut previous_keys: std::collections::HashSet<sdl2::keyboard::Keycode> = std::collections::HashSet::new();
 
 
-    'running: loop {
+    'main: loop {
         for event in events.poll_iter() {
             // I still don't know what if let really does
             if let sdl2::event::Event::Quit{..} = event {
-                break 'running;
+                break 'main;
             }
         }
         
@@ -73,7 +89,7 @@ fn main() {
         ;
 
         if keys.contains(&sdl2::keyboard::Keycode::Escape) {
-            break 'running;
+            break 'main;
         }
 
         let pressed_keys = &keys - &previous_keys;
