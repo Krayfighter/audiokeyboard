@@ -12,14 +12,6 @@ license = "GPL-3.0-or-later"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rodio = "0.15.0"
-# sdl = "0.3.6"
-# tui = "0.19.0"
+cpal = "0.15.2"
+crossterm = "0.27.0"
 
-
-[dependencies.sdl2]
-version = "0.35.2"
-features = [
-    "bundled",
-    # "gfx"
-]

@@ -3,10 +3,10 @@
 // pub mod voice_algorithms {
 
 use std::f32::consts::PI;
+use std::f32::consts::TAU;
 
-#[inline]
-pub fn _sine_function(xval: f32) -> f32 {
-    return xval.sin();
+pub fn sine_function(x: f32, freq: f32, srate: f32) -> f32 {
+    return ((TAU * x * freq) / srate).sin();
 }
 
 #[inline]

@@ -1,124 +1,162 @@
 
+use std::{io::{
+    Write
+}, any::Any};
 
+use crossterm::{
+    queue,
+    execute,
+    QueueableCommand,
+};
 
+use cpal::traits::StreamTrait;
+
+mod state;
 mod sound_types;
-// pub mod ui;
 mod voice_algorithms;
 
 
-use core::panic;
 
+fn unwrap_clean<T: Any, U: std::error::Error>(item: Result<T, U>) -> T {
+    return match item {
+        Ok(value) => value,
+        Err(err) => {
+            crossterm::terminal::disable_raw_mode().unwrap();
+            panic!("{}", err);
+        }
+    };
+}
+
+// see https://en.wikipedia.org/wiki/12_equal_temperament#Mathematical_properties
+fn note_freq(note_num: u32) -> f32 {
+    440.0f32 * 2.0f32.powf((note_num as i32-49) as f32 / 12.)
+}
+
+fn get_freq(chr: char) -> Option<f32> {
+    // the number passed to `note_freq` is the note number
+    // on a piano with 49 being middle A or 440 hz
+    return match chr {
+        '1' => Some(note_freq(48)),
+        'q' => Some(note_freq(49)),
+        '2' => Some(note_freq(50)),
+        'w' => Some(note_freq(51)),
+        'e' => Some(note_freq(52)),
+        '4' => Some(note_freq(53)),
+        'r' => Some(note_freq(54)),
+        '5' => Some(note_freq(55)),
+        't' => Some(note_freq(56)),
+        'y' => Some(note_freq(57)),
+        '7' => Some(note_freq(58)),
+        'u' => Some(note_freq(59)),
+        '8' => Some(note_freq(60)),
+        'i' => Some(note_freq(61)),
+        '9' => Some(note_freq(62)),
+        'o' => Some(note_freq(63)),
+        'p' => Some(note_freq(64)),
+        '-' => Some(note_freq(65)),
+        '[' => Some(note_freq(66)),
+        '=' => Some(note_freq(67)),
+        ']' => Some(note_freq(68)),
+        _ => None
+    }
+}
 
 fn main() {
 
-        // NOTE: I am using rodio for audio instead of sdl2::audio
-        // I may want to change this in the future to reduce the dependency
-        // count, but sdl2::audio works a little different so it would be
-        // a significant investment
+    let mut keyboard_state = state::KeyboardState::new();
 
-    /* audio initialization */
-    // define the audio stream and its handle
-
-    // TODO move into match statement
-    let (_stream, stream_handle) = rodio::OutputStream::try_default().unwrap();
-
-    // TODO move into match statement
-    // get a sink for the output stream
-    let sink = rodio::Sink::try_new(&stream_handle).unwrap();
-
-    sink.set_volume(0.15); // reduce volume
-
-    // define the sender_receiver pair (gets the sender back)
-    let (sound_gen, sender) = sound_types::SoundGenerator::new(
-        voice_algorithms::_sine_function,
-    );
-
-    sink.append(sound_gen);
-    // END AUDIO SETUP
-
-    let sdl_context = match sdl2::init() {
-        Ok(sdl) => sdl,
-        Err(errcode) => {panic!("sdl init error: {}", errcode)},
-    };
-
-    let sdl_video = match sdl_context.video() {
-        Ok(video) => video,
-        Err(errcode) => panic!("sdl video init error: {}", errcode),
-    };
-
-    let window = sdl_video
-        .window("AudioKeyboard", 800, 600)
-        .position_centered()
-        .build()
-        .map_err(|error| {error.to_string()}).unwrap()
-    ;
-
-    let mut canvas = match window.into_canvas()
-        .build()
-        .map_err(|e| e.to_string()
-    ) {
-        Ok(canvas) => canvas,
-        Err(errcode) => panic!("canvas creation error: {}", errcode),
-    };
-
-    canvas.set_draw_color(sdl2::pixels::Color::RGB(0, 0, 0));
-    canvas.clear();
-    canvas.present();
-
-    let mut events = match sdl_context.event_pump() {
-        Ok(epump) => epump,
-        Err(errcode) => panic!("event creation failed: {}", errcode),
-    }; // I believe this creates a thread synced queue for event to be received from
-
-    let mut previous_keys: std::collections::HashSet<sdl2::keyboard::Keycode> = std::collections::HashSet::new();
+    let stream = sound_types::AudioState::make_stream(keyboard_state.clone());
+    stream.play().unwrap();
 
 
-    'main: loop {
-        for event in events.poll_iter() {
-            // I still don't know what if let really does
-            if let sdl2::event::Event::Quit{..} = event {
-                break 'main;
+    let mut stdout = std::io::stdout();
+
+    // setup the terminal for advanced usage
+    unwrap_clean(crossterm::terminal::enable_raw_mode());
+    unwrap_clean(execute!(
+        stdout,
+        crossterm::event::PushKeyboardEnhancementFlags (
+            crossterm::event::KeyboardEnhancementFlags::all()
+        )
+    ));
+
+    stdout.queue(
+        crossterm::terminal::Clear(
+            crossterm::terminal::ClearType::All
+        )).unwrap();
+
+    unwrap_clean(stdout.flush());
+
+
+    'mainloop: loop {
+        if let Err(_) = crossterm::event::poll(
+            std::time::Duration::from_millis(50)
+        ) {
+            continue 'mainloop;
+        }
+
+        use crossterm::event::KeyCode as KC;
+        use crossterm::event::KeyEventKind as KEK;
+
+
+        unwrap_clean(queue!(
+            stdout,
+            crossterm::terminal::Clear(
+                crossterm::terminal::ClearType::All)
+        ));
+
+        match crossterm::event::read() {
+            Ok(
+                crossterm::event::Event::Key(keyevent)
+            ) => { match keyevent.code {
+                KC::Esc => {
+                    break 'mainloop;
+                },
+                KC::Char(chr) => {
+                    match keyevent.kind {
+                        KEK::Press => {
+                            if let Some(freq) = get_freq(chr) {
+                                keyboard_state.set(chr, freq);
+                            }
+                        },
+                        KEK::Release => {
+                            keyboard_state.remove(chr);
+                        },
+                        KEK::Repeat => {},
+                    }
+                    unwrap_clean(execute!(
+                        stdout,
+                        crossterm::cursor::MoveTo(0, 0),
+                        crossterm::style::Print(format!(
+                            "Character -> {} | Type -> {:?} | as hex -> {:#x}",
+                            chr, keyevent.kind,
+                            TryInto::<u8>::try_into(chr).unwrap()
+                        )),
+                    ));
+                }
+                other => {
+                    unwrap_clean(execute!(
+                        stdout,
+                        crossterm::cursor::MoveTo(0, 0),
+                        crossterm::style::Print(format!("{:?}", other))
+                    ));
+                    continue 'mainloop;
+                },
+            }},
+            Ok(_) => {},
+            Err(e) => {
+                println!("encountered input error: {}", e);
+                break 'mainloop;
             }
         }
-        
-        let keys: std::collections::HashSet<sdl2::keyboard::Keycode> = events
-            .keyboard_state()
-            .pressed_scancodes()
-            .filter_map(sdl2::keyboard::Keycode::from_scancode)
-            .collect()
-        ;
+    }
 
-        if keys.contains(&sdl2::keyboard::Keycode::Escape) {
-            break 'main;
-        }
+    // deinit terminal modes
+    crossterm::terminal::disable_raw_mode().unwrap();
+    execute!(
+        stdout,
+        crossterm::event::PopKeyboardEnhancementFlags
+    ).unwrap();
 
-        let pressed_keys = &keys - &previous_keys;
-        let released_keys = &previous_keys - &keys;
-
-
-        for key in pressed_keys {
-            match sender.send((sound_types::key_to_note(key), true)) {
-                Ok(_) => {},
-                Err(_) => println!("error sending key"),
-            }
-        }
-
-        for key in released_keys {
-            match sender.send((sound_types::key_to_note(key), false)) {
-                Ok(_) => {},
-                Err(_) => println!("error sending key"),
-            }
-        }
-
-        previous_keys = keys;
-
-        std::thread::sleep(std::time::Duration::from_millis(18));
-
-    };
-
-
-
-
-
-
+    // stream.pause().unwrap();
 }
