@@ -11,9 +11,10 @@ allows easy source mod for your own sound wave functions
 ## Supported Platforms
 
 Linux\
-Windows
+
+most likely not to work on window/macos unless using a terminal like [kitty](https://sw.kovidgoyal.net/kitty/) 
 
 ## Tested Platforms
 
-Linux: Archlinux (Arco)
+Linux
 <!-- Windows: wine -->
