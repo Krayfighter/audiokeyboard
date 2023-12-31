@@ -4,9 +4,6 @@ use cpal::traits::{
     DeviceTrait
 };
 
-use std::f32::consts::TAU;
-const FREQUENCY: f32 = 440.0; // hertz
-
 
 pub struct AudioState {
     sample_rate: f32,
@@ -20,13 +17,6 @@ impl AudioState {
     fn increment_sample(&mut self) {
         self.current_x_value += 1.;
         self.current_x_value %= self.sample_rate;
-    }
-
-    fn sine_function(&self, x_value: &mut f32) {
-        *x_value = (
-            TAU * self.current_x_value *
-            (FREQUENCY / self.sample_rate)
-        ).sin();
     }
 
     pub fn make_stream(
@@ -70,7 +60,7 @@ impl AudioState {
                                 state.sample_rate,
                             );
                         })
-                        .map(|num| num/length as f32)
+                        .map(|num| num/(length+1) as f32)
                         .reduce(|acc, num| acc+num)
                         .unwrap_or(0.);
                 }
