@@ -64,7 +64,10 @@ impl UiThread {
                     menus::keyset_menu(&mut self.config)?;
                     self.menu_state = MenuState::default();
                 },
-                MenuState::Select(SelectMenu::Temerament) => {}
+                MenuState::Select(SelectMenu::Temerament) => {
+                    menus::temperament_menu(&mut self.config)?;
+                    self.menu_state = MenuState::default();
+                }
                 MenuState::None => break 'mainloop,
             }
         }

@@ -21,7 +21,7 @@ const DEFAULT_KEYS_SETTINGS: (&[char], u16, u16) = (
 const DEFAULT_KEYS_EXTENDED_SETTINGS: (&[char], u16, u16) = (
     DEFAULT_KEYS_EXTENDED,
     31,
-    6
+    6,
 );
 
 // white = true, black = false
@@ -32,7 +32,7 @@ pub const BLACK_KEY: bool = false;
 pub struct KeySet {
     pub keys: Box<[char]>,
     pub map: HashMap<char, (u16, KeyColor)>,
-    temperament: f32,
+    pub temperament: f32,
 }
 
 impl Default for KeySet {
@@ -116,18 +116,27 @@ impl KeySet {
         ];
     }
 
-    pub fn from_keyset(name: String) -> anyhow::Result<Self> {
+    pub fn set_keyset(&mut self, name: String) -> anyhow::Result<()> {
         match name.as_str() {
-            "default" => return Ok( Self::default() ),
+            "default" => {
+                self.keys = Box::from(DEFAULT_KEYS_SETTINGS.0);
+                self.map = Self::generate_hashmap(
+                    DEFAULT_KEYS_SETTINGS.0,
+                    DEFAULT_KEYS_SETTINGS.1,
+                    DEFAULT_KEYS_SETTINGS.2
+                );
+            },
             "default extended" => {
-                return Ok ( Self::new(
+                self.keys = Box::from(DEFAULT_KEYS_EXTENDED_SETTINGS.0);
+                self.map = Self::generate_hashmap(
                     DEFAULT_KEYS_EXTENDED_SETTINGS.0,
                     DEFAULT_KEYS_EXTENDED_SETTINGS.1,
                     DEFAULT_KEYS_EXTENDED_SETTINGS.2,
-                ) );
+                );
             },
             _ => bail!("unable to match given string to a keyset"),
         }
+        return Ok(());
     }
 }
 

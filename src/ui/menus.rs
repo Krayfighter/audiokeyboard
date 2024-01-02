@@ -91,6 +91,10 @@ pub fn main_menu(
                 *menu_state = super::MenuState::Select(super::SelectMenu::KeySet);
                 return Ok(());
             },
+            KC::F(2) => {
+                *menu_state = super::MenuState::Select(super::SelectMenu::Temerament);
+                return Ok(());
+            }
             _ => {},
         }
 
@@ -189,28 +193,120 @@ pub fn keyset_menu(keyset: &mut super::config::KeySet) -> anyhow::Result<()> {
                 KEK::Press | KEK::Repeat => {
                     if menu_index == 0 { menu_index = keysets.len()-1; }
                     else { menu_index -= 1; }
-                    continue 'menu;
                 },
-                _ => continue 'menu,
+                _ => {},
             }},
             KC::Down => { match keyevent.kind {
                 KEK::Press | KEK::Repeat => {
                     if menu_index+1 == keysets.len() { menu_index = 0; }
                     else { menu_index += 1; }
-                    continue 'menu;
                 }
-                _ => continue 'menu,
+                _ => {},
             }},
             KC::Enter => {
-                *keyset = super::config::KeySet::from_keyset(
-                    keysets[menu_index].clone()
-                )?;
+                keyset.set_keyset(keysets[menu_index].clone())?;
+                break 'menu;
             },
-            _ => continue 'menu,
+            _ => {},
+        }
+    }
+    return Ok(());
+}
+
+pub fn temperament_menu(keyset: &mut super::config::KeySet) -> anyhow::Result<()> {
+
+    let mut buffer_index: usize = 0;
+    let mut buffer = String::default();
+    let mut error_msg = String::default();
+
+    let mut stdout = std::io::stdout();
+
+    'menu: loop {
+        queue!(stdout,
+            crossterm::terminal::Clear(
+                crossterm::terminal::ClearType::All
+            ),
+            crossterm::cursor::Show,
+            crossterm::cursor::MoveTo(0, 0),
+            crossterm::style::Print(
+                "Input a Number for Temperament (the number of notes per octave) 12.0 being default"
+            ),
+            crossterm::cursor::MoveTo(0, 1),
+            crossterm::style::Print( &buffer ),
+        )?;
+
+        if error_msg.as_str() != "" {
+            queue!(stdout,
+                crossterm::cursor::MoveTo(0, 2),
+                crossterm::style::Print( &error_msg ),
+            )?;
         }
 
-        return Ok(());
+        stdout.queue(crossterm::cursor::MoveTo(buffer_index as u16, 1))?;
+        stdout.flush()?;
+
+        let keyevent = match poll_keyevent(50) {
+            Ok(Some(event)) => event,
+            Ok(None) | Err(_) => continue 'menu,
+        };
+
+        use crossterm::event::KeyCode as KC;
+        use crossterm::event::KeyEventKind as KEK;
+        match keyevent.code {
+            KC::Esc => break 'menu,
+            KC::Left => { match keyevent.kind {
+                KEK::Press | KEK::Repeat => {
+                    if buffer_index == 0 { buffer_index = buffer.len(); }
+                    else { buffer_index -= 1; }
+                },
+                _ => {},
+            }},
+            KC::Right => { match keyevent.kind {
+                KEK::Press | KEK::Repeat => {
+                    if buffer_index == buffer.len() { buffer_index = 0; }
+                    else { buffer_index += 1; }
+                }
+                _ => {},
+            }},
+            KC::Enter => {
+                keyset.temperament = match buffer.parse() {
+                    Ok(num) => num,
+                    Err(e) => {
+                        error_msg = e.to_string();
+                        continue 'menu;
+                    }
+                };
+                break 'menu;
+            },
+            KC::Char(chr) => {
+                match keyevent.kind {
+                    crossterm::event::KeyEventKind::Press => {
+                        buffer.push(chr);
+                        buffer_index += 1;
+                    },
+                    _ => {},
+                }
+                // TODO make better interface
+            },
+            KC::Backspace => {
+                match keyevent.kind {
+                    crossterm::event::KeyEventKind::Press => {
+                        if buffer.len() <= 1 { continue 'menu; }
+                        buffer.remove( buffer_index-1 );
+                        buffer_index -= 1;
+                    },
+                    _ => {},
+                }
+            },
+            _ => {},
+        }
+
     }
+    execute!(stdout,
+        crossterm::cursor::Hide,
+    )?;
+
+    return Ok(());
 }
 
 
