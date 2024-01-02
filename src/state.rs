@@ -37,5 +37,26 @@ impl KeyboardState {
     }
 }
 
+#[derive(Clone)]
+pub struct SyncFunctionPtr( Arc<Mutex<Option<fn(f32, f32, f32) -> f32>>> );
+
+impl Default for SyncFunctionPtr {
+    fn default() -> Self {
+        return Self ( Arc::new(Mutex::new( None )) );
+    }
+}
+
+impl SyncFunctionPtr {
+    pub fn get(&self) -> Option<fn(f32, f32, f32) -> f32> {
+        let inner = self.0.lock().unwrap();
+        return inner.clone();
+    }
+
+    pub fn set(&self, function: fn(f32, f32, f32) -> f32) {
+        let mut inner = self.0.lock().unwrap();
+        *inner = Some(function);
+    }
+}
+
 
 

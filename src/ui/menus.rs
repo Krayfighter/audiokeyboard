@@ -60,8 +60,7 @@ fn poll_keyevent(millis: u64) -> anyhow::Result<Option<crossterm::event::KeyEven
 pub fn main_menu(
     keyset: &crate::ui::config::KeySet,
     mut shared_state: crate::state::KeyboardState,
-    menu_state: &mut super::MenuState,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<super::MenuState> {
     let mut stdout = std::io::stdout();
     'menu: loop {
         let keyevent = match poll_keyevent(50) {
@@ -73,8 +72,9 @@ pub fn main_menu(
         use crossterm::event::KeyEventKind as KEK;
         match keyevent.code {
             KC::Esc => {
-                *menu_state = super::MenuState::None;
-                return Ok(());
+                if keyevent.kind == KEK::Press {
+                    return Ok(super::MenuState::None);
+                }
             }
             KC::Char(chr) => {
                 match keyevent.kind {
@@ -87,14 +87,11 @@ pub fn main_menu(
                     _ => {},
                 }
             },
-            KC::F(1) => {
-                *menu_state = super::MenuState::Select(super::SelectMenu::KeySet);
-                return Ok(());
-            },
-            KC::F(2) => {
-                *menu_state = super::MenuState::Select(super::SelectMenu::Temerament);
-                return Ok(());
-            }
+            KC::F(1) => return Ok(super::MenuState::Keyset),
+            KC::F(2) => return Ok(super::MenuState::Temperament),
+            // KC::F(3) => return Ok(super::MenuState::Voice),
+            // IDK why, but F3 does not get read at least on my computer
+            KC::F(4) => return Ok(super::MenuState::Voice),
             _ => {},
         }
 
@@ -188,7 +185,7 @@ pub fn keyset_menu(keyset: &mut super::config::KeySet) -> anyhow::Result<()> {
         use crossterm::event::KeyCode as KC;
         use crossterm::event::KeyEventKind as KEK;
         match keyevent.code {
-            KC::Esc => {},
+            KC::Esc => break 'menu,
             KC::Up => { match keyevent.kind {
                 KEK::Press | KEK::Repeat => {
                     if menu_index == 0 { menu_index = keysets.len()-1; }
@@ -308,6 +305,69 @@ pub fn temperament_menu(keyset: &mut super::config::KeySet) -> anyhow::Result<()
 
     return Ok(());
 }
+
+pub fn voice_menu(voice_mutex: crate::state::SyncFunctionPtr) -> anyhow::Result<()> {
+    let mut menu_index: usize = 0;
+
+    use crate::voice_algorithms::VOICES;
+
+    const FG: crossterm::style::Color = crossterm::style::Color::White;
+    const BG: crossterm::style::Color = crossterm::style::Color::Black;
+
+    let mut stdout = std::io::stdout();
+    'menu: loop {
+
+        for (iter, (name, _fn_ptr)) in crate::voice_algorithms::VOICES
+            .iter()
+            .enumerate() {
+            let (fg, bg) = match iter==menu_index {
+                true => (&BG, &FG),
+                false => (&FG, &BG),
+            };
+            queue!(stdout,
+                crossterm::cursor::MoveTo(0, iter as u16),
+                crossterm::style::SetForegroundColor( *fg ),
+                crossterm::style::SetBackgroundColor( *bg ),
+                crossterm::style::Print( name ),
+                crossterm::style::ResetColor,
+            )?;
+        }
+
+        stdout.flush()?;
+
+        let keyevent = match poll_keyevent(50) {
+            Ok(Some(event)) => event,
+            Ok(None) | Err(_) => continue 'menu,
+        };
+
+        use crossterm::event::KeyCode as KC;
+        use crossterm::event::KeyEventKind as KEK;
+        match keyevent.code {
+            KC::Esc => break 'menu,
+            KC::Up => { match keyevent.kind {
+                KEK::Press | KEK::Repeat => {
+                    if menu_index == 0 { menu_index = VOICES.len()-1; }
+                    else { menu_index -= 1; }
+                },
+                _ => {},
+            }},
+            KC::Down => { match keyevent.kind {
+                KEK::Press | KEK::Repeat => {
+                    if menu_index+1 == VOICES.len() { menu_index = 0; }
+                    else { menu_index += 1; }
+                }
+                _ => {},
+            }},
+            KC::Enter => {
+                voice_mutex.set(VOICES[menu_index].1);
+                break 'menu;
+            },
+            _ => {},
+        }
+    }
+    return Ok(());
+}
+
 
 
 

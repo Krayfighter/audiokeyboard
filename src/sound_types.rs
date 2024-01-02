@@ -20,7 +20,8 @@ impl AudioState {
     }
 
     pub fn make_stream(
-        keystates: crate::state::KeyboardState
+        keystates: crate::state::KeyboardState,
+        transform_ref: crate::state::SyncFunctionPtr,
     ) -> cpal::Stream {
         // get default host and output device
         let host = cpal::default_host();
@@ -47,6 +48,9 @@ impl AudioState {
         return device.build_output_stream(
             &output_config.config(),
             move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
+                if let Some(fnct_ptr) = transform_ref.get() {
+                    state.transform = fnct_ptr;
+                }
                 for value in data.iter_mut() {
                     state.increment_sample();
                     let ksc = keystates.cloned();

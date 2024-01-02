@@ -10,17 +10,15 @@ mod config;
 mod menus;
 
 
-enum SelectMenu {
-    KeySet,
-    Temerament,
-}
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 enum MenuState {
-    Select(SelectMenu),
     #[default]
     Main,
     None,
+    Keyset,
+    Temperament,
+    Voice,
 }
 
 
@@ -45,7 +43,7 @@ impl UiThread {
     }}
 
     // run blocking
-    pub fn run(&mut self) -> anyhow::Result<()> {
+    pub fn run(&mut self, voice_mutex: crate::state::SyncFunctionPtr) -> anyhow::Result<()> {
         let mut stdout = std::io::stdout();
         'mainloop: loop {
             stdout.queue(
@@ -54,20 +52,23 @@ impl UiThread {
 
             match self.menu_state {
                 MenuState::Main => {
-                    menus::main_menu(
+                    self.menu_state = menus::main_menu(
                         &self.config,
                         self.shared_state.clone(),
-                        &mut self.menu_state
                     )?;
                 },
-                MenuState::Select(SelectMenu::KeySet) => {
+                MenuState::Keyset => {
                     menus::keyset_menu(&mut self.config)?;
                     self.menu_state = MenuState::default();
                 },
-                MenuState::Select(SelectMenu::Temerament) => {
+                MenuState::Temperament => {
                     menus::temperament_menu(&mut self.config)?;
                     self.menu_state = MenuState::default();
-                }
+                },
+                MenuState::Voice => {
+                    menus::voice_menu(voice_mutex.clone())?;
+                    self.menu_state = MenuState::default();
+                },
                 MenuState::None => break 'mainloop,
             }
         }

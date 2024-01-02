@@ -1,48 +1,65 @@
 
+use std::collections::HashMap;
 
 // pub mod voice_algorithms {
 
 use std::f32::consts::PI;
 use std::f32::consts::TAU;
 
+pub const VOICES: &[(&'static str, fn(f32, f32, f32) -> f32)] = &[
+    ("sine", sine_function),
+    ("soft square wave", soft_square),
+    ("electric piano", electric_piano),
+    ("vibrawave", vibrawave),
+    ("oboe synth", vibrawave2),
+];
+
 pub fn sine_function(x: f32, freq: f32, srate: f32) -> f32 {
+    return sine(x, freq, srate);
+}
+
+#[inline]
+fn angle(x: f32, freq: f32) -> f32 {
+    return TAU * x * freq;
+}
+
+#[inline]
+fn sine(x: f32, freq: f32, srate: f32) -> f32 {
     return ((TAU * x * freq) / srate).sin();
 }
 
-#[inline]
-pub fn _electric_piano1(xval: f32) -> f32 {
-    return
-        ((5.0*(xval/2.0/PI)).sin()+
-        (5.0*(xval/PI)).cos())/2.0
+pub fn soft_square(x: f32, freq: f32, srate: f32) -> f32 {
+    return ((
+        angle(x, freq) / srate
+    ).sin() * 100.).tanh();
 }
 
-#[inline]
-pub fn _electric_piano2(xval: f32) -> f32 {
-    return
-        (xval.sin()+
-        (2.0*xval).sin())/3.0
+
+pub fn electric_piano(x: f32, freq: f32, srate: f32) -> f32 {
+    return (
+        sine(x, freq, srate)+
+        sine(2.*x, freq, srate)
+    ) / 2.0;
 }
 
-#[inline]
-pub fn _vibrawave1(xval: f32) -> f32 {
-    // vibra wave
-    return
-        (xval.sin()+
-        ((2.0*xval)*0.11).sin()+
-        ((3.0*xval)*0.35).sin()+
-        ((4.0*xval)*0.06).sin()+
-        ((5.0*xval)*0.05).sin()+
-        ((6.0*xval)*0.045).sin())/1.6
+pub fn vibrawave(x: f32, freq: f32, srate: f32) -> f32 {
+    return (
+        sine(x      , freq, srate)+
+        sine(0.22*x , freq, srate)+
+        sine(1.05*x , freq, srate)+
+        sine(0.25*x , freq, srate)+
+        sine(0.25*x , freq, srate)+
+        sine(0.275*x, freq, srate)
+    ) / 1.6; // ???? translated from old code
 }
 
-#[inline]
-pub fn _vibrawave2(xval: f32) -> f32 {
-    // vibra wave 2
-    return
-        (xval.sin()+
-        ((2.0*xval)*0.4).sin()+
-        ((3.0*xval)*0.2).sin()+
-        ((4.0*xval)*0.3).sin())/1.6
+pub fn vibrawave2(x: f32, freq: f32, srate: f32) -> f32 {
+    return (
+        sine(x      , freq, srate)+
+        sine(0.8*x  , freq, srate)+
+        sine(0.6*x  , freq, srate)+
+        sine(1.2*x  , freq, srate)
+    ) / 1.6; // again weird constant
 }
 
 #[inline]
