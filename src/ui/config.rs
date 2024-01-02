@@ -73,7 +73,6 @@ impl KeySet {
             .into_iter()
             .map(|keynum| (keynum, Self::keycolor(bottom, keynum, offset)))
             .collect::<Vec<(u16, bool)>>();
-        std::fs::write("test.txt", format!("{:?}", &values));
         return keys
             .into_iter()
             .cloned()

@@ -6,8 +6,8 @@ use cpal::traits::{
 
 
 pub struct AudioState {
-    sample_rate: f32,
-    current_x_value: f32,
+    sample_rate: u64,
+    current_x_value: u64,
     transform: fn(f32, f32, f32) -> f32
 }
 
@@ -15,8 +15,8 @@ impl AudioState {
 
     #[inline]
     fn increment_sample(&mut self) {
-        self.current_x_value += 1.;
-        self.current_x_value %= self.sample_rate;
+        self.current_x_value += 1;
+        self.current_x_value %= self.sample_rate*10;
     }
 
     pub fn make_stream(
@@ -39,8 +39,8 @@ impl AudioState {
             .with_max_sample_rate();
 
         let mut state = Self {
-            sample_rate: output_config.sample_rate().0 as f32,
-            current_x_value: 0.,
+            sample_rate: output_config.sample_rate().0 as u64,
+            current_x_value: 0,
             transform: crate::voice_algorithms::sine_function
         };
     
@@ -55,9 +55,9 @@ impl AudioState {
                         .iter()
                         .map(|(_, freq)| {
                             return ( state.transform ) (
-                                state.current_x_value,
+                                state.current_x_value as f32,
                                 *freq,
-                                state.sample_rate,
+                                state.sample_rate as f32,
                             );
                         })
                         .map(|num| num/(length+1) as f32)
