@@ -18,3 +18,14 @@ most likely not to work on window/macos unless using a terminal like [kitty](htt
 
 Linux
 <!-- Windows: wine -->
+
+## How To Use
+
+the default uses the qwerty row for white keys and the number row \
+for black keys. There is an extended mode that also enables the two \
+rows immediately below the qwerty layer.
+
+This and all additional modes are listed under the 'F1' menu accessed \
+by pressing F1. This menu and the entire app can be escaped by the Esc \
+key.
+
